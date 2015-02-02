@@ -54,7 +54,7 @@ app.get('/api', function (req, res) {
   res.send('Ecomm API is running');
 });
 app.get('/api/getmyposition/:name', function (req, res){
-     res.header('Access-Control-Allow-Origin', 'example.com');
+     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -62,7 +62,7 @@ app.get('/api/getmyposition/:name', function (req, res){
 });
 
 app.get('/api/setmyposition/:name/:x/:y/:z', function (req, res){  
-     res.header('Access-Control-Allow-Origin', 'example.com');
+     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
 
