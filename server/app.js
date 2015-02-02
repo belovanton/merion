@@ -19,7 +19,7 @@ var position = {
     coordinatesY: [],
     coordinatesZ: [],
     setCoord: function(name, X, Y, Z){
-        this.names[md5(name)]=name;
+        this.names[name]=name;
         this.coordinatesX[name]=X;
         this.coordinatesY[name]=Y;
         this.coordinatesZ[name]=Z;
