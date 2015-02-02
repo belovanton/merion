@@ -127,12 +127,16 @@ function init()
 	var MovingCubeMat = new THREE.MeshFaceMaterial(materialArray);
 	var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1, materialArray );
 	MovingCube = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
+	MovingCube2 = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
 	MovingCube.position.set(0, 25.1, 0);
+	MovingCube2.position.set(0, 25.1, 0);
 	scene.add( MovingCube );	
+	scene.add( MovingCube2 );
 	
 }
 
 var MovingCube;
+var MovingCube2;
 
 function animate() 
 {
