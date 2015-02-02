@@ -6,12 +6,23 @@ var application_root = __dirname,
 var app = express();
 
 var position = {
-    coordinates: [],
-    setCoord: function(name, coord){
-        this.coordinates[name]=coord;    
+    coordinatesX: [],
+    coordinatesY: [],
+    coordinatesZ: [],
+    setCoord: function(name, X, Y, Z){
+        this.coordinatesX[name]=X;
+        this.coordinatesY[name]=Y;
+        this.coordinatesZ[name]=Z;
     },
     getCoord: function(name){
-        return {'name': name, 'value': this.coordinates[name]};
+        return {'name': name, 
+                'X': this.coordinatesX[name],
+                'Y': this.coordinatesY[name],
+                'Z': this.coordinatesZ[name]
+            };
+    },
+    getAllNames: function(){
+
     }    
 }
 // Database
@@ -35,9 +46,9 @@ app.get('/api/getmyposition/:name', function (req, res){
   return res.send(position.getCoord(req.params.name));
 });
 
-app.get('/api/setmyposition/:name/:value', function (req, res){  
+app.get('/api/setmyposition/:name/:x/:y/:z', function (req, res){  
   //employees.keys(req.params).forEach(function (key) { target[key]; })
-  position.setCoord(req.params.name, req.params.value);        
+  position.setCoord(req.params.name, req.params.x, req.params.y, req.params.z);        
   //console.log(req.params);
   return res.send(position.getCoord(req.params.name));
   //return;
