@@ -15,6 +15,7 @@
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
+<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 
 <!-- jQuery code to display an information button and box when clicked. -->
 <script src="js/jquery-1.9.1.js"></script>
@@ -53,6 +54,11 @@ var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 // custom global variables
 var cube;
+
+// Cube
+var player1;
+var player2;
+
 
 init();
 animate();
@@ -95,6 +101,7 @@ function init()
 	var light = new THREE.PointLight(0xffffff);
 	light.position.set(0,250,0);
 	scene.add(light);
+
 	// FLOOR
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
@@ -105,6 +112,7 @@ function init()
 	floor.position.y = -0.5;
 	floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
+
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
@@ -116,27 +124,31 @@ function init()
 	// CUSTOM //
 	////////////
 	
-	// create an array with six textures for a cool cube
-	var materialArray = [];
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xpos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xneg.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/ypos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/yneg.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zpos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zneg.png' ) }));
-	var MovingCubeMat = new THREE.MeshFaceMaterial(materialArray);
-	var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1, materialArray );
-	MovingCube = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
-	MovingCube2 = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
-	MovingCube.position.set(0, 25.1, 0);
-	MovingCube2.position.set(0, 25.1, 0);
-	scene.add( MovingCube );	
-	scene.add( MovingCube2 );
+
+	// Textures
+	var materialArrayPlayer1 = [];
+	materialArrayPlayer1.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xpos.png' ) }));
+    materialArrayPlayer1.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xneg.png' ) }));
+    materialArrayPlayer1.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/ypos.png' ) }));
+    materialArrayPlayer1.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/yneg.png' ) }));
+    materialArrayPlayer1.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zpos.png' ) }));
+    materialArrayPlayer1.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zneg.png' ) }));
+	var MovingCubeMat = new THREE.MeshFaceMaterial(materialArrayPlayer1);
+	var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1, materialArrayPlayer1);
+
+    // Cube Player 1
+    player1 = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
+    player1.position.set(50, 50, 50);
+	scene.add( player1 );
+
+    // Cube Player 2
+
+    player2 = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
+    player2.position.set(100, 100, 100);
+    scene.add( player2 );
 	
 }
 
-var MovingCube;
-var MovingCube2;
 
 function animate() 
 {
@@ -155,39 +167,39 @@ function update()
 
 	// move forwards/backwards/left/right
 	if ( keyboard.pressed("W") )
-		MovingCube.translateZ( -moveDistance );
+		player1.translateZ( -moveDistance );
 	if ( keyboard.pressed("S") )
-		MovingCube.translateZ(  moveDistance );
+        player1.translateZ(  moveDistance );
 	if ( keyboard.pressed("Q") )
-		MovingCube.translateX( -moveDistance );
+        player1.translateX( -moveDistance );
 	if ( keyboard.pressed("E") )
-		MovingCube.translateX(  moveDistance );	
+        player1.translateX(  moveDistance );
 
 	// rotate left/right/up/down
 	var rotation_matrix = new THREE.Matrix4().identity();
 	if ( keyboard.pressed("A") )
-		MovingCube.rotateOnAxis( new THREE.Vector3(0,1,0), rotateAngle);
+        player1.rotateOnAxis( new THREE.Vector3(0,1,0), rotateAngle);
 	if ( keyboard.pressed("D") )
-		MovingCube.rotateOnAxis( new THREE.Vector3(0,1,0), -rotateAngle);
+        player1.rotateOnAxis( new THREE.Vector3(0,1,0), -rotateAngle);
 	if ( keyboard.pressed("R") )
-		MovingCube.rotateOnAxis( new THREE.Vector3(1,0,0), rotateAngle);
+        player1.rotateOnAxis( new THREE.Vector3(1,0,0), rotateAngle);
 	if ( keyboard.pressed("F") )
-		MovingCube.rotateOnAxis( new THREE.Vector3(1,0,0), -rotateAngle);
+        player1.rotateOnAxis( new THREE.Vector3(1,0,0), -rotateAngle);
 	
 	if ( keyboard.pressed("Z") )
 	{
-		MovingCube.position.set(0,25.1,0);
-		MovingCube.rotation.set(0,0,0);
+        player1.position.set(0,25.1,0);
+        player1.rotation.set(0,0,0);
 	}
 	
 	var relativeCameraOffset = new THREE.Vector3(0,50,200);
 
-	var cameraOffset = relativeCameraOffset.applyMatrix4( MovingCube.matrixWorld );
+	var cameraOffset = relativeCameraOffset.applyMatrix4( player1.matrixWorld );
 
 	camera.position.x = cameraOffset.x;
 	camera.position.y = cameraOffset.y;
 	camera.position.z = cameraOffset.z;
-	camera.lookAt( MovingCube.position );
+	camera.lookAt( player1.position );
 	
 	//camera.updateMatrix();
 	//camera.updateProjectionMatrix();
@@ -199,6 +211,26 @@ function render()
 {
 	renderer.render( scene, camera );
 }
+
+function updatePlayer(position, rotation) {
+    $.ajax({url: '',
+        success: function(data) {
+
+        }
+    });
+
+    // position
+    if (typeof position === 'undefined') {
+        player2.position.set(position[0],position[1],position[2]);
+    }
+
+    //rotation
+    if (typeof rotation === 'undefined') {
+        player2.rotation.set(rotation[0],rotation[1],rotation[2]);
+    }
+
+}
+
 
 </script>
 
