@@ -19,7 +19,6 @@ var position = {
     coordinatesY: [],
     coordinatesZ: [],
     setCoord: function(name, X, Y, Z){
-        this.names[name]=name;
         this.coordinatesX[name]=X;
         this.coordinatesY[name]=Y;
         this.coordinatesZ[name]=Z;
@@ -32,7 +31,7 @@ var position = {
             };
     },
     getAllNames: function(){
-        return {'names': this.names};
+        return {'names': Object.keys(this.coordinatesX)};
     }    
 }
 // Database
@@ -54,7 +53,7 @@ app.get('/api', function (req, res) {
   res.send('Ecomm API is running');
 });
 app.get('/api/getmyposition/:name', function (req, res){
-     res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -62,7 +61,7 @@ app.get('/api/getmyposition/:name', function (req, res){
 });
 
 app.get('/api/setmyposition/:name/:x/:y/:z', function (req, res){  
-     res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
 
