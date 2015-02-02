@@ -63,8 +63,8 @@ var player2;
 init();
 animate();
 
-// FUNCTIONS 		
-function init() 
+// FUNCTIONS
+function init()
 {
 	// SCENE
 	scene = new THREE.Scene();
@@ -74,12 +74,12 @@ function init()
 	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
 	camera.position.set(0,150,400);
-	camera.lookAt(scene.position);	
+	camera.lookAt(scene.position);
 	// RENDERER
 	if ( Detector.webgl )
 		renderer = new THREE.WebGLRenderer( {antialias:true} );
 	else
-		renderer = new THREE.CanvasRenderer(); 
+		renderer = new THREE.CanvasRenderer();
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
@@ -104,7 +104,7 @@ function init()
 
 	// FLOOR
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
-	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
 	floorTexture.repeat.set( 10, 10 );
 	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
@@ -119,11 +119,11 @@ function init()
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
 	// scene.add(skyBox);
 	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
-	
+
 	////////////
 	// CUSTOM //
 	////////////
-	
+
 
 	// Textures
 	var materialArrayPlayer1 = [];
@@ -146,15 +146,17 @@ function init()
     player2 = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
     player2.position.set(100, 100, 100);
     scene.add( player2 );
-	
+
 }
 
 
-function animate() 
+function animate()
 {
     requestAnimationFrame( animate );
-	render();		
+	render();
 	update();
+    sendCoords();
+    updatePlayer();
 }
 
 function update()
@@ -162,7 +164,7 @@ function update()
 	var delta = clock.getDelta(); // seconds.
 	var moveDistance = 200 * delta; // 200 pixels per second
 	var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
-	
+
 	// local transformations
 
 	// move forwards/backwards/left/right
@@ -185,13 +187,13 @@ function update()
         player1.rotateOnAxis( new THREE.Vector3(1,0,0), rotateAngle);
 	if ( keyboard.pressed("F") )
         player1.rotateOnAxis( new THREE.Vector3(1,0,0), -rotateAngle);
-	
+
 	if ( keyboard.pressed("Z") )
 	{
         player1.position.set(0,25.1,0);
         player1.rotation.set(0,0,0);
 	}
-	
+
 	var relativeCameraOffset = new THREE.Vector3(0,50,200);
 
 	var cameraOffset = relativeCameraOffset.applyMatrix4( player1.matrixWorld );
@@ -200,38 +202,34 @@ function update()
 	camera.position.y = cameraOffset.y;
 	camera.position.z = cameraOffset.z;
 	camera.lookAt( player1.position );
-	
+
 	//camera.updateMatrix();
 	//camera.updateProjectionMatrix();
-			
+
 	stats.update();
 }
 
-function render() 
+function render()
 {
 	renderer.render( scene, camera );
 }
 
-function updatePlayer(position, rotation) {
-    $.ajax({url: '',
+function updatePlayer() {
+    $.ajax({url: 'http://test.kmplzt.de:4242/api/getmyposition/player2/',
         success: function(data) {
-
+         // console.log(data);
+         player2.position.set(data.X,data.Y,data.Z);
         }
     });
-
-    // position
-    if (typeof position === 'undefined') {
-        player2.position.set(position[0],position[1],position[2]);
-    }
-
-    //rotation
-    if (typeof rotation === 'undefined') {
-        player2.rotation.set(rotation[0],rotation[1],rotation[2]);
-    }
-
 }
 
-
+function sendCoords() {
+    $.ajax({url: 'http://test.kmplzt.de:4242/api/setmyposition/player1/'+player1.position.x+'/'+player1.position.x+'/'+player1.position.z,
+        success: function(data) {
+         // console.log(data);
+        }
+    });
+}
 </script>
 
 </body>
