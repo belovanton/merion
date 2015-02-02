@@ -11,8 +11,8 @@ var position = {
         this.coordinates[name]=coord;    
     },
     getCoord: function(name){
-        return this.coordinates[name];
-    }
+        return {'name': name, 'value': this.coordinates[name]};
+    }    
 }
 // Database
 
