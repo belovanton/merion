@@ -19,7 +19,7 @@ var position = {
     coordinatesY: [],
     coordinatesZ: [],
     setCoord: function(name, X, Y, Z){
-        this.names.push(name);
+        this.names[md5(name)]=name;
         this.coordinatesX[name]=X;
         this.coordinatesY[name]=Y;
         this.coordinatesZ[name]=Z;
@@ -54,10 +54,18 @@ app.get('/api', function (req, res) {
   res.send('Ecomm API is running');
 });
 app.get('/api/getmyposition/:name', function (req, res){
+     res.header('Access-Control-Allow-Origin', 'example.com');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
   return res.send(position.getCoord(req.params.name));
 });
 
 app.get('/api/setmyposition/:name/:x/:y/:z', function (req, res){  
+     res.header('Access-Control-Allow-Origin', 'example.com');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
   position.setCoord(req.params.name, req.params.x, req.params.y, req.params.z);        
   return res.send(position.getCoord(req.params.name));
 });
