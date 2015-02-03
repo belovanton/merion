@@ -1,11 +1,13 @@
 var object = {
     name: '',
-    X: '',
-    Y: '',
-    Z: '',
-    type: ''
+    type: '',
+    position: {
+        X: '',
+        Y: '',
+        Z: ''
+    }
 };
-
+var spawn = { X:'100', Y: '100', Z: '100'};
 //// Database
 //
 ////mongoose.connect('mongodb://localhost/ecomm_database');
@@ -14,9 +16,9 @@ var object = {
 //
 
 
-var asteroid = {name: 'asteroid-x73z', X: '146', Y: '211', Z: '131', type: 'asteroid'};
-var asteroid2 = {name: 'asteroid-x73z', X: '178', Y: '221', Z: '112', type: 'asteroid'};
-var asteroid3 = {name: 'asteroid-x73z', X: '193', Y: '217', Z: '102', type: 'asteroid'};
+var asteroid = {name: 'asteroid-x72z', position: {X: '146', Y: '211', Z: '131'}, type: 'asteroid'};
+var asteroid2 = {name: 'asteroid-x71z', position: {X: '178', Y: '221', Z: '112'}, type: 'asteroid'};
+var asteroid3 = {name: 'asteroid-x73z', position: {X: '193', Y: '217', Z: '102'}, type: 'asteroid'};
 
 var objects = [asteroid, asteroid2, asteroid3];
 // Подключаем модуль и ставим на прослушивание 8080-порта - 80й обычно занят под http-сервер
@@ -29,8 +31,10 @@ io.sockets.on('connection', function (socket) {
     // Т.к. чат простой - в качестве ников пока используем первые 5 символов от ID сокета
     newObject = object;
     newObject.name = (socket.id).toString().substr(0, 5);
+    newObject.type = 'player';
+    newObject.position - spawn;
     objects.push(newObject);
-    console.log(newObject.name);
+
 
     // Навешиваем обработчик на входящее сообщение
     socket.on('message', function (msg) {
