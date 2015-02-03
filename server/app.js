@@ -21,7 +21,7 @@ console.log('start socket');
 // Навешиваем обработчик на подключение нового клиента
 io.sockets.on('connection', function (socket) {
     // Т.к. чат простой - в качестве ников пока используем первые 5 символов от ID сокета
-    newObject = new object;
+    newObject = object;
     newObject.name = (socket.id).toString().substr(0, 5);
     objects.push(newObject);
     console.log(newObject.name);
