@@ -2,9 +2,9 @@ var object = {
     name: '',
     type: '',
     position: {
-        X: '',
-        Y: '',
-        Z: ''
+        X: '100',
+        Y: '100',
+        Z: '100'
     },
     rotation: {
         X: '0',
@@ -12,7 +12,7 @@ var object = {
         Z: '0'
     }
 };
-var spawn = { X:'100', Y: '100', Z: '100'};
+
 //// Database
 //
 ////mongoose.connect('mongodb://localhost/ecomm_database');
@@ -37,7 +37,6 @@ io.sockets.on('connection', function (socket) {
     newObject = object;
     newObject.name = (socket.id).toString().substr(0, 5);
     newObject.type = 'player';
-    newObject.position = spawn;
     objects.push(newObject);
 
 
