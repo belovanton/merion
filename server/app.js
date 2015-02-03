@@ -32,7 +32,7 @@ io.sockets.on('connection', function (socket) {
     newObject = object;
     newObject.name = (socket.id).toString().substr(0, 5);
     newObject.type = 'player';
-    newObject.position - spawn;
+    newObject.position = spawn;
     objects.push(newObject);
 
 
