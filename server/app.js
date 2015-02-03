@@ -1,18 +1,3 @@
-var application_root = __dirname,
-    express = require("express"),
-    path = require("path"); 
-  //  mongoose = require('mongoose');
-
-var app = express();
-//CORS middleware
-var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', 'example.com');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-
-    next();
-}
-
 var position = {
     names: [],
     coordinatesX: [],
@@ -24,7 +9,7 @@ var position = {
         this.coordinatesZ[name]=Z;
     },
     getCoord: function(name){
-        return {'name': name, 
+        return {'name': name,
                 'X': this.coordinatesX[name],
                 'Y': this.coordinatesY[name],
                 'Z': this.coordinatesZ[name]
@@ -32,46 +17,62 @@ var position = {
     },
     getAllNames: function(){
         return {'names': Object.keys(this.coordinatesX)};
-    }    
+    }
 }
-// Database
+//// Database
+//
+////mongoose.connect('mongodb://localhost/ecomm_database');
+//
+//// Config
+//
 
-//mongoose.connect('mongodb://localhost/ecomm_database');
+// Подключаем модуль и ставим на прослушивание 8080-порта - 80й обычно занят под http-сервер
+var io = require('socket.io').listen(8080);
+console.log('start socket');
+// Отключаем вывод полного лога - пригодится в production'е
+//io.set('log level', 100);
+// Навешиваем обработчик на подключение нового клиента
+io.sockets.on('connection', function (socket) {
+    // Т.к. чат простой - в качестве ников пока используем первые 5 символов от ID сокета
+    var ID = (socket.id).toString().substr(0, 5);
+    console.log(ID);
+    var time = (new Date).toLocaleTimeString();
+    // Посылаем клиенту сообщение о том, что он успешно подключился и его имя
+    socket.json.send({'event': 'connected', 'name': ID, 'time': time});
 
-// Config
+    // Посылаем всем остальным пользователям, что подключился новый клиент и его имя
+    socket.broadcast.json.send({'event': 'userJoined', 'name': ID, 'time': time});
+    // Навешиваем обработчик на входящее сообщение
+    socket.on('message', function (msg) {
+        console.log(msg);
+        // Уведомляем клиента, что его сообщение успешно дошло до сервера
+        socket.json.send(position);
+        // Отсылаем сообщение остальным участникам чата
 
-app.configure(function () {
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(app.router);
-  app.use(allowCrossDomain);
-  app.use(express.static(path.join(application_root, "public")));
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+    });
+    // При отключении клиента - уведомляем остальных
+    socket.on('disconnect', function() {
+        var time = (new Date).toLocaleTimeString();
+        io.sockets.json.send({'event': 'userSplit', 'name': ID, 'time': time});
+    });
 });
 
-app.get('/api', function (req, res) {
-  res.send('Ecomm API is running');
-});
-app.get('/api/getmyposition/:name', function (req, res){
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
 
-  return res.send(position.getCoord(req.params.name));
-});
 
-app.get('/api/setmyposition/:name/:x/:y/:z', function (req, res){  
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+var sys = require("sys");
+var events = require("events");
 
-  position.setCoord(req.params.name, req.params.x, req.params.y, req.params.z);        
-  return res.send(position.getCoord(req.params.name));
-});
+(function(){
+    var heartbeat = new events.EventEmitter();
+    heartbeat.addListener('beat', function() {
 
-app.get('/api/getallnames', function (req, res){  
-  return res.send(position.getAllNames());
-});
-// Launch server
+            console.log(position);
+            io.sockets.json.send(position);
 
-app.listen(4242);
+        setTimeout(function(){
+            heartbeat.emit('beat');
+        }, 10);
+    });
+    heartbeat.emit('beat');
+})();
+
