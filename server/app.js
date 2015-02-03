@@ -5,6 +5,11 @@ var object = {
         X: '',
         Y: '',
         Z: ''
+    },
+    rotation: {
+        X: '0',
+        Y: '0',
+        Z: '0'
     }
 };
 var spawn = { X:'100', Y: '100', Z: '100'};
@@ -46,8 +51,6 @@ io.sockets.on('connection', function (socket) {
     });
     // При отключении клиента - уведомляем остальных
     socket.on('disconnect', function() {
-        var time = (new Date).toLocaleTimeString();
-        io.sockets.json.send({'event': 'userSplit', 'name': ID, 'time': time});
     });
 });
 
