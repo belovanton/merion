@@ -5,7 +5,7 @@ var object = {
     Z: '',
     type: ''
 };
-var objects = [];
+
 //// Database
 //
 ////mongoose.connect('mongodb://localhost/ecomm_database');
@@ -13,6 +13,12 @@ var objects = [];
 //// Config
 //
 
+
+var asteroid = {name: 'asteroid-x73z', X: '146', Y: '211', Z: '131', type: 'asteroid'};
+var asteroid2 = {name: 'asteroid-x73z', X: '178', Y: '221', Z: '112', type: 'asteroid'};
+var asteroid3 = {name: 'asteroid-x73z', X: '193', Y: '217', Z: '102', type: 'asteroid'};
+
+var objects = [asteroid, asteroid2, asteroid3];
 // Подключаем модуль и ставим на прослушивание 8080-порта - 80й обычно занят под http-сервер
 var io = require('socket.io').listen(8080);
 console.log('start socket');
