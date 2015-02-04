@@ -19,39 +19,105 @@
 
 <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <script>
-    // MAIN
-    // standard global variables
-    var container, scene, camera, renderer, controls, stats;
+    // main
     var keyboard = new THREEx.KeyboardState();
     var clock = new THREE.Clock();
+    var players = {};
+
+    // screen
+    var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+    var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+
+    // scent
+    var scene = new THREE.Scene();
+
+    // render
+    if (Detector.webgl)
+        var renderer = new THREE.WebGLRenderer( {antialias:true} );
+    else
+        var renderer = new THREE.CanvasRenderer();
+    renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // game container
+    var container = document.getElementById( 'ThreeJS' );
+    container.appendChild( renderer.domElement );
+
+    // camera
+    var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+    camera.position.set(0,150,400);
+    camera.lookAt(scene.position);
+
+    // events
+    THREEx.WindowResize(renderer, camera);
+    THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+
+    // player textures
+    var geometry = new THREE.CubeGeometry(50, 50, 50);
+    var material = new THREE.MeshBasicMaterial({color: '#666'});
+
+    // enemy textures #609
+    var EnemyGeometry = new THREE.CubeGeometry(10, 10, 10);
+    var EnemyMaterial = new THREE.MeshBasicMaterial({color: '#609'});
+
+    // socket
     var socket = connect();
-
-    var player = ''; //local player
-    var players = {}
-
-    // Player Textures
-    var materialArrayPlayer = [];
-    materialArrayPlayer.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xpos.png' ) }));
-    materialArrayPlayer.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xneg.png' ) }));
-    materialArrayPlayer.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/ypos.png' ) }));
-    materialArrayPlayer.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/yneg.png' ) }));
-    materialArrayPlayer.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zpos.png' ) }));
-    materialArrayPlayer.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zneg.png' ) }));
-    var MovingCubeMat = new THREE.MeshFaceMaterial(materialArrayPlayer);
-    var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1, materialArrayPlayer);
-
-    //start
-    init();
-    createUser();
-    animate();
-
-
-    // FUNCTIONS
 
     function connect() {
         var socket = io.connect('http://test.kmplzt.de:8080');
-        socket.on('connect', function () { });
+        socket.on('connect', function () { events(); });
         return socket;
+    }
+
+    function events(){
+        socket.on('message', function (msg) {
+            updatePlayers(msg);
+            console.log(msg);
+        });
+    }
+
+    function createFloor(){
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set( 10, 10 );
+        var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+        var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+        var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.position.y = -0.5;
+        floor.rotation.x = Math.PI / 2;
+
+        return floor;
+    }
+
+    function createUser(geo, mat, name, type, position){
+        var player = new THREE.Mesh(geo, mat);
+        player.name = name;
+        player.type = type;
+        player.position.set(position.X, position.Y, position.Z);
+
+        return player;
+    }
+
+    function updatePlayers(users){
+
+        users.forEach(function(item){
+            if(typeof players[item.name] == "undefined") {
+                players[item.name] = createUser(EnemyGeometry,EnemyMaterial, item.name, item.type, item.position);
+                scene.add(players[item.name]);
+            }
+            else {
+                var user = scene.getObjectByName(item.name, true);
+                user.position.set(item.position.X, item.position.Y, item.position.Z);
+            }
+        });
+
+    }
+
+    function createSky(){
+        var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+        var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+        var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+
+        return skyBox;
     }
 
     function animate() {
@@ -64,136 +130,58 @@
         renderer.render( scene, camera );
     }
 
-    function init()
-    {
-        // SCENE
-        scene = new THREE.Scene();
-
-        // CAMERA
-        var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-        var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-        camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
-        scene.add(camera);
-        camera.position.set(0,150,400);
-        camera.lookAt(scene.position);
-
-        // RENDERER
-        if ( Detector.webgl )
-            renderer = new THREE.WebGLRenderer( {antialias:true} );
-        else
-            renderer = new THREE.CanvasRenderer();
-        renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-        container = document.getElementById( 'ThreeJS' );
-        container.appendChild( renderer.domElement );
-
-        // EVENTS
-        THREEx.WindowResize(renderer, camera);
-        THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
-
-        // STATS
-        stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.bottom = '0px';
-        stats.domElement.style.zIndex = 100;
-        container.appendChild( stats.domElement );
-
-        // LIGHT
-        var light = new THREE.PointLight(0xffffff);
-        light.position.set(0,250,0);
-        scene.add(light);
-
-        // FLOOR
-        var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
-        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-        floorTexture.repeat.set( 10, 10 );
-        var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
-        var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
-        var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.y = -0.5;
-        floor.rotation.x = Math.PI / 2;
-        scene.add(floor);
-
-        // SKYBOX/FOG
-        var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-        var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
-        var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-        scene.add(skyBox);
-        scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
-
-
-    }
     function update()
     {
         var delta = clock.getDelta(); // seconds.
         var moveDistance = 200 * delta; // 200 pixels per second
         var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
+        var user = scene.getObjectByName( "localuser", true );
         // local transformations
         // move forwards/backwards/left/right
         if ( keyboard.pressed("W") ) {
-            player.translateZ(-moveDistance);
+            user.translateZ(-moveDistance);
             socket.send({'type': 'thrust', 'value': '10'});
         }
         if ( keyboard.pressed("S") )
-            player.translateZ(  moveDistance );
+            user.translateZ(  moveDistance );
         if ( keyboard.pressed("Q") )
-            player.translateX( -moveDistance );
+            user.translateX( -moveDistance );
         if ( keyboard.pressed("E") )
-            player.translateX(  moveDistance );
+            user.translateX(  moveDistance );
 
         // rotate left/right/up/down
         var rotation_matrix = new THREE.Matrix4().identity();
         if ( keyboard.pressed("A") )
-            player.rotateOnAxis( new THREE.Vector3(0,1,0), rotateAngle);
+            user.rotateOnAxis( new THREE.Vector3(0,1,0), rotateAngle);
         if ( keyboard.pressed("D") )
-            player.rotateOnAxis( new THREE.Vector3(0,1,0), -rotateAngle);
+            user.rotateOnAxis( new THREE.Vector3(0,1,0), -rotateAngle);
         if ( keyboard.pressed("R") )
-            player.rotateOnAxis( new THREE.Vector3(1,0,0), rotateAngle);
+            user.rotateOnAxis( new THREE.Vector3(1,0,0), rotateAngle);
         if ( keyboard.pressed("F") )
-            player.rotateOnAxis( new THREE.Vector3(1,0,0), -rotateAngle);
+            user.rotateOnAxis( new THREE.Vector3(1,0,0), -rotateAngle);
         if ( keyboard.pressed("Z") )
         {
-            player.position.set(0,25.1,0);
-            player.rotation.set(0,0,0);
+            user.position.set(0,25.1,0);
+            user.rotation.set(0,0,0);
         }
         var relativeCameraOffset = new THREE.Vector3(0,50,200);
-        var cameraOffset = relativeCameraOffset.applyMatrix4( player.matrixWorld );
+        var cameraOffset = relativeCameraOffset.applyMatrix4( user.matrixWorld );
         camera.position.x = cameraOffset.x;
         camera.position.y = cameraOffset.y;
         camera.position.z = cameraOffset.z;
-        camera.lookAt( player.position );
+        camera.lookAt( user.position );
         camera.updateMatrix();
         camera.updateProjectionMatrix();
-        stats.update();
-    }
-    function createUser(){
-        player = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
-        player.position.set(50, 50, 50);
-        scene.add( player );
+        // stats.update();
     }
 
-    function createPlayers(users){
+    scene.add(camera);
+    scene.add(createFloor());
+    scene.add(createSky());
+    scene.add(createUser(geometry, material, 'localuser','localplayer', {'X':200, 'Y':200, 'Z':300}));
 
+    animate();
 
-        //  var users = [{'name':'sdff', 'X':100,'Y':100,'Z':100, 'type':'qwe'}, {'name':'asdg', 'X':200,'Y':200,'Z':300, 'type':'qwe'},{'name':'zxcc', 'X':300,'Y':300,'Z':300, 'type':'bvcb'}];
-
-        users.forEach(function(item){
-            console.log(item);
-            console.log(this.players);
-            players[item.name] = new THREE.Mesh( this.MovingCubeGeom, this.MovingCubeMat );
-
-            players[item.name].name = item.name;
-            players[item.name].type = item.type;
-            players[item.name].position.set(item.X, item.Y, item.Z);
-            scene.add(players[item.name] );
-        });
-
-    }
-
-    function events(){
-        socket.on('message', function (data) {
-            createPlayers(data);
-        });
-    }
 </script>
 
 </body>
